@@ -7,3 +7,7 @@ class UserCreate(UserBase):
     login: str
     password: str
 
+class UserLogin(UserBase):
+    login: str
+    password: str
+
