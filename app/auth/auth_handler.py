@@ -7,20 +7,15 @@ def token_response(access_token: str, refresh_token : str) -> Dict[str, str]:
     return {"access_token": access_token,
             "refresh_token": refresh_token}
 
-def sign_jwt(login: str) -> Dict[str, str]:
-    access_payload = {
-        "login": login,
-        "expires": time.time() + settings.ACCESS_TOKEN_EXPIRE_SECONDS
-    }
-    refresh_payload = {
-        "login": login,
-        "expires": time.time() + settings.REFRESH_TOKEN_EXPIRE_SECONDS
-    }
+def sign_jwt(login: str) -> dict:
+    payload = {"login": login, "expires": time.time() + 600}
+    refresh_payload = {"login": login, "expires": time.time() + 86400}
 
-    access_token = jwt.encode(access_payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    access_token = jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
     refresh_token = jwt.encode(refresh_payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
-    token_response(access_token, refresh_token)
-    return {"access_token": access_token, "refresh_token": refresh_token} 
+
+    return {"login": login, "access_token": access_token, "refresh_token": refresh_token} 
+
 
 def decode_jwt(token: str) -> dict:
     try:

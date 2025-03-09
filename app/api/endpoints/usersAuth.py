@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import SessionLocal
-from app.cruds.user_crud import creating_user, loggining_user
+from app.cruds.user_crud import creating_user, loggining_user, refreshing_users_token
 from app.schemas.user_schema import UserCreate, UserLogin
 from fastapi.responses import FileResponse
 from app.auth.auth_bearer import JWTBearer
@@ -33,17 +33,7 @@ def login_user(user : UserLogin, db : Session = Depends(get_db)):
 
 @router.post("/refresh")
 def refresh_token(request: RefreshTokenRequest):
-    login = verify_refresh_token(request.refresh_token)
-    if not login:
-        raise HTTPException(status_code=403, detail="Invalid or expired refresh token")
-    
-    return sign_jwt(login)
-
-
-
-
-
-
+    return refreshing_users_token(request)
 
 
 @router.get("/test/info", dependencies=[Depends(JWTBearer())]) #protected
