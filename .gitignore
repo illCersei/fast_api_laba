@@ -8,6 +8,5 @@ __pycache__/
 
 .vscode/
 
-pip-log.txt
-pip-delete-this-directory.txt
-poetry.lock
+alembic/versions/*.pyc
+alembic/versions/__pycache__/

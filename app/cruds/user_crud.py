@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 from app.models.users import Users
 from app.schemas.user_schema import UserCreate, UserLogin
-from app.auth.auth_handler import sign_jwt, verify_refresh_token
+from app.auth.auth_handler import sign_jwt, verify_refresh_token, decode_jwt
 from fastapi.exceptions import HTTPException
 from app.auth.security import hash_password, verify_password
 from app.schemas.auth import RefreshTokenRequest
+from app.core.config import settings
 
 def creating_user(db: Session, user: UserCreate):
     existing_user = db.query(Users).filter(Users.login == user.login).first()
@@ -25,7 +26,6 @@ def creating_user(db: Session, user: UserCreate):
         "refresh_token": tokens["refresh_token"]
     }
 
-
 def loggining_user(db: Session, user: UserLogin):
     existing_user = db.query(Users).filter(Users.login == user.login).first()
 
@@ -40,3 +40,8 @@ def refreshing_users_token(request: RefreshTokenRequest):
         raise HTTPException(status_code=403, detail="Invalid or expired refresh token")
     
     return sign_jwt(login)
+
+def get_users_info(token : str) -> dict[str, str] :
+
+    payload = decode_jwt(token)
+    return {"login" : payload["login"] }
