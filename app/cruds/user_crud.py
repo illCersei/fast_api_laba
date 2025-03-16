@@ -41,7 +41,9 @@ def refreshing_users_token(request: RefreshTokenRequest):
     
     return sign_jwt(login)
 
-def get_users_info(token : str) -> dict[str, str] :
+def get_users_info(db: Session, token : str) -> dict :
 
     payload = decode_jwt(token)
-    return {"login" : payload["login"] }
+
+    query = db.query(Users.id, Users.login).filter(Users.login==payload["login"]).first()
+    return {"id": query.id, "login": query.login}

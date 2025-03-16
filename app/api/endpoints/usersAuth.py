@@ -38,8 +38,8 @@ def refresh_token(request: RefreshTokenRequest):
     return refreshing_users_token(request)
 
 @router.get("/users/me", dependencies=[Depends(JWTBearer())])
-def info_user(token : str = Depends(JWTBearer())):
-    return get_users_info(token)
+def info_user(token : str = Depends(JWTBearer()), db: Session = Depends(get_db)):
+    return get_users_info(db, token)
 
 @router.post("/binary_image")
 def process_binary_image(request: ImageBase64Request):
