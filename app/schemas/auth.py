@@ -6,12 +6,9 @@ class Login(BaseModel):
     access_token : str
     refresh_token : str
 
-class UserResponse(BaseModel):
+class SignUp(BaseModel):
     id : int
     email : str
-
-class SignUp(BaseModel):
-    user : UserResponse
     access_token : str
     refresh_token : str
 

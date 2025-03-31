@@ -18,10 +18,11 @@ def creating_user(db: Session, user: UserCreate):
     db.commit()
     db.refresh(new_user)
 
-    tokens = sign_jwt(new_user.email)
+    tokens = sign_jwt(new_user.id, new_user.email)
 
     return {
-        "user": {"id": new_user.id, "email": new_user.email},
+        "id": new_user.id,
+        "email": new_user.email,
         "access_token": tokens["access_token"],
         "refresh_token": tokens["refresh_token"]
     }
