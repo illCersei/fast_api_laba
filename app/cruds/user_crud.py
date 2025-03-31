@@ -31,8 +31,8 @@ def loggining_user(db: Session, user: UserLogin):
 
     if not existing_user or not verify_password(user.password, existing_user.password):
         raise HTTPException(status_code=400, detail="Ошибка входа")
-    
-    return sign_jwt(user.email)
+
+    return sign_jwt(existing_user.id ,user.email)
 
 def refreshing_users_token(request: RefreshTokenRequest):
     email = verify_refresh_token(request.refresh_token)

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
 class Login(BaseModel):
+    id : int
     email : str
     access_token : str
     refresh_token : str
