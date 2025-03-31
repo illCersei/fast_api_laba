@@ -4,10 +4,10 @@ class UserBase(BaseModel):
     pass
 
 class UserCreate(UserBase):
-    login: str
+    email: str
     password: str
 
 class UserLogin(UserBase):
-    login: str
+    email: str
     password: str
 

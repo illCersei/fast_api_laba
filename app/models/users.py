@@ -8,5 +8,5 @@ class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    login = Column(VARCHAR)
+    email = Column(VARCHAR)
     password = Column(VARCHAR,)

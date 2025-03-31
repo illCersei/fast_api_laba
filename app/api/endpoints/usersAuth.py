@@ -29,7 +29,7 @@ def get_db():
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return creating_user(db, user)
 
-@router.post("/login", response_model=Login) 
+@router.post("/email", response_model=Login) 
 def login_user(user : UserLogin, db : Session = Depends(get_db)):
     return loggining_user(db, user)
 

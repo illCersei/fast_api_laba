@@ -1,13 +1,13 @@
 from pydantic import BaseModel, Field
 
 class Login(BaseModel):
-    login : str
+    email : str
     access_token : str
     refresh_token : str
 
 class UserResponse(BaseModel):
     id : int
-    login : str
+    email : str
 
 class SignUp(BaseModel):
     user : UserResponse
