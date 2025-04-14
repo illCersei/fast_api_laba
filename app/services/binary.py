@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from PIL import Image
 from io import BytesIO
 
-app = FastAPI()
+#app = FastAPI()
 
 class ImageBase64Request(BaseModel):
     image_base64: str
