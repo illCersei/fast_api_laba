@@ -41,7 +41,7 @@ def refresh_token(request: RefreshTokenRequest):
 def info_user(token : str = Depends(JWTBearer()), db: Session = Depends(get_db)):
     return get_users_info(db, token)
 
-@router.post("/binary_image")
+@router.post("/binary_image",  dependencies=[Depends(JWTBearer())])
 def process_binary_image(request: ImageBase64Request):
     """ Принимает изображение в base64, бинаризует его и возвращает обратно в base64 """
     image = decode_base64_to_image(request.image_base64)  # Декодируем base64 в NumPy
@@ -50,25 +50,25 @@ def process_binary_image(request: ImageBase64Request):
     return {"binary_image_base64": binary_base64}  # Возвращаем результат
 
 
-@router.get("/test/info", dependencies=[Depends(JWTBearer())]) #protected
-def test(token : str = Depends(JWTBearer())):
+# @router.get("/test/info", dependencies=[Depends(JWTBearer())]) #protected
+# def test(token : str = Depends(JWTBearer())):
 
-    payload = decode_jwt(token)
-    print(payload)
-    cringe_time = payload.get("expires")
-    current_time = datetime.now(timezone.utc).timestamp()
-    token_left = cringe_time - current_time
+#     payload = decode_jwt(token)
+#     print(payload)
+#     cringe_time = payload.get("expires")
+#     current_time = datetime.now(timezone.utc).timestamp()
+#     token_left = cringe_time - current_time
 
-    return {
-        "tokeny_ostalos" : token_left
-    }
+#     return {
+#         "tokeny_ostalos" : token_left
+#     }
 
-@router.get("/test", dependencies=[Depends(JWTBearer())])
-def test_file():
-    return FileResponse("app/static/index.html")
+# @router.get("/test", dependencies=[Depends(JWTBearer())])
+# def test_file():
+#     return FileResponse("app/static/index.html")
 
 
-@router.get("/test2")
-def test2():
-    return FileResponse("app/static/index.html")
+# @router.get("/test2")
+# def test2():
+#     return FileResponse("app/static/index.html")
 

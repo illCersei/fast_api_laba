@@ -1,46 +1,47 @@
 import base64
-import cv2
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from PIL import Image
+from io import BytesIO
 
 app = FastAPI()
 
 class ImageBase64Request(BaseModel):
-    image_base64: str  # Входящее изображение в base64
+    image_base64: str
 
 def decode_base64_to_image(base64_string: str) -> np.ndarray:
-    """ Декодирует изображение из base64 в NumPy (OpenCV) """
     try:
         image_data = base64.b64decode(base64_string)
-        np_arr = np.frombuffer(image_data, np.uint8)
-        return cv2.imdecode(np_arr, cv2.IMREAD_GRAYSCALE)  # Загружаем в градациях серого
+        image = Image.open(BytesIO(image_data)).convert('L')  
+        return np.array(image)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid base64 image format")
 
 def encode_image_to_base64(image: np.ndarray) -> str:
-    """ Кодирует изображение NumPy в base64 """
-    _, buffer = cv2.imencode('.png', image)
-    return base64.b64encode(buffer).decode("utf-8")
+    pil_image = Image.fromarray(image)
+    buffered = BytesIO()
+    pil_image.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 def bradley_threshold(image: np.ndarray, S_div: int = 8, t: float = 0.15) -> np.ndarray:
-    """ Реализация бинаризации изображения по алгоритму Брэдли с исправленным переполнением """
-    height, width = image.shape[:2]
-    S = width // S_div  # Размер локального окна
+    height, width = image.shape
+    S = width // S_div
     s2 = S // 2
 
-    # Вычисляем интегральное изображение
-    integral_image = cv2.integral(image, sdepth=cv2.CV_64F)  # Изменяем тип данных на float64
+    integral_image = np.cumsum(np.cumsum(image, axis=0), axis=1).astype(np.float64)
+    integral_image = np.pad(integral_image, ((1, 0), (1, 0)), mode='constant', constant_values=0)
 
-    # Создаём выходное бинарное изображение
     binary_image = np.zeros_like(image, dtype=np.uint8)
 
     for y in range(height):
+        y1 = max(y - s2, 0)
+        y2 = min(y + s2, height - 1)
         for x in range(width):
-            x1, x2 = max(0, x - s2), min(width - 1, x + s2)
-            y1, y2 = max(0, y - s2), min(height - 1, y + s2)
+            x1 = max(x - s2, 0)
+            x2 = min(x + s2, width - 1)
 
-            count = (x2 - x1) * (y2 - y1)
+            count = (y2 - y1 + 1) * (x2 - x1 + 1)
             sum_region = (
                 integral_image[y2 + 1, x2 + 1]
                 - integral_image[y1, x2 + 1]
@@ -48,10 +49,11 @@ def bradley_threshold(image: np.ndarray, S_div: int = 8, t: float = 0.15) -> np.
                 + integral_image[y1, x1]
             )
 
-            # ✅ Исправляем переполнение
             if int(image[y, x]) * count < sum_region * (1.0 - t):
                 binary_image[y, x] = 0
             else:
                 binary_image[y, x] = 255
 
     return binary_image
+
+
