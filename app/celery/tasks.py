@@ -32,6 +32,9 @@ def binarize_image_task(self, image_base64: str, user_id: str, algorithm: str = 
     binarized_np = binary.bradley_threshold(image_np)
     result_base64 = binary.encode_image_to_base64(binarized_np)
 
+    with open(f"{task_id}_binarized.txt", "w") as f:
+        f.write(result_base64)
+
     publish({
         "status": "COMPLETED",
         "task_id": task_id,
