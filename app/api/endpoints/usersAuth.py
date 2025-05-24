@@ -6,6 +6,9 @@ from app.schemas.user_schema import UserCreate, UserLogin
 from fastapi.responses import FileResponse
 from app.auth.auth_bearer import JWTBearer
 
+from app.celery.tasks import binarize_image_task
+import uuid
+
 from app.schemas.auth import Login, RefreshTokenRequest, SignUp
 
 from app.auth.auth_handler import decode_jwt
@@ -33,9 +36,11 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 def login_user(user : UserLogin, db : Session = Depends(get_db)):
     return loggining_user(db, user)
 
+"""
 @router.post("/refresh")
 def refresh_token(request: RefreshTokenRequest):
     return refreshing_users_token(request)
+"""
 
 @router.get("/users/me", dependencies=[Depends(JWTBearer())])
 def info_user(token : str = Depends(JWTBearer()), db: Session = Depends(get_db)):
@@ -48,6 +53,24 @@ def process_binary_image(request: ImageBase64Request):
     binary_image = bradley_threshold(image)  # Бинаризуем изображение
     binary_base64 = encode_image_to_base64(binary_image)  # Кодируем обратно в base64
     return {"binary_image_base64": binary_base64}  # Возвращаем результат
+
+
+@router.post("/binary/image/async", dependencies=[Depends(JWTBearer())])
+def async_binary_image(request: ImageBase64Request, token: str = Depends(JWTBearer())):
+    payload = decode_jwt(token)
+    user_id = str(payload.get("id") or "anonymous")
+
+    task = binarize_image_task.delay(
+        image_base64=request.image_base64,
+        user_id=user_id,
+        algorithm="bradley"
+    )
+
+    return {
+        "message": "Task accepted",
+        "task_id": task.id,
+        "status_ws_channel": f"/ws/{user_id}"
+    }
 
 
 # @router.get("/test/info", dependencies=[Depends(JWTBearer())]) #protected
